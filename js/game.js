@@ -52,10 +52,7 @@ document.getElementById('best-score').innerText = bestScore;
 // Handle High DPI (Retina) displays to prevent blurry images
 function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
-    // We want the CSS size to remain 480x640
-    canvas.style.width = '480px';
-    canvas.style.height = '640px';
-
+    
     // Set actual internal dimensions based on DPR
     canvas.width = 480 * dpr;
     canvas.height = 640 * dpr;
