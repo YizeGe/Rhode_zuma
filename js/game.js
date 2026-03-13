@@ -81,23 +81,65 @@ function initLevel() {
 // Initial setup
 resizeCanvas();
 
-canvas.addEventListener('mousemove', e => {
+function getMousePos(evt) {
     let bounds = canvas.getBoundingClientRect();
-    let mouseX = e.clientX - bounds.left;
-    let mouseY = e.clientY - bounds.top;
-    if (gameInfo.state === 'PLAYING' && gameInfo.cannon) {
-        gameInfo.cannon.aim(mouseX, mouseY);
+    
+    // Calculate the scale (actual internal resolution vs css display resolution)
+    let scaleX = 480 / bounds.width;
+    let scaleY = 640 / bounds.height;
+    
+    // Get mouse/touch position relative to the viewport
+    let clientX = evt.clientX;
+    let clientY = evt.clientY;
+    
+    if (evt.touches && evt.touches.length > 0) {
+        clientX = evt.touches[0].clientX;
+        clientY = evt.touches[0].clientY;
     }
-});
 
-canvas.addEventListener('click', e => {
+    // Map screen coordinate back to the 480x640 logical design map
+    let mouseX = (clientX - bounds.left) * scaleX;
+    let mouseY = (clientY - bounds.top) * scaleY;
+    
+    return { x: mouseX, y: mouseY };
+}
+
+function handlePointerMove(e) {
     if (gameInfo.state === 'PLAYING' && gameInfo.cannon) {
+        const pos = getMousePos(e);
+        gameInfo.cannon.aim(pos.x, pos.y);
+    }
+}
+
+function handlePointerDown(e) {
+    if (gameInfo.state === 'PLAYING' && gameInfo.cannon) {
+        // Only fire if the click is actually on the canvas to prevent misfires
         if (!gameInfo.cannon.flyingMarble) {
             gameInfo.audio.play('fire');
         }
+        
+        // Final aim update just before shooting for touch devices
+        const pos = getMousePos(e);
+        gameInfo.cannon.aim(pos.x, pos.y);
+        
         gameInfo.cannon.fire();
     }
-});
+}
+
+// Mouse events
+canvas.addEventListener('mousemove', handlePointerMove);
+canvas.addEventListener('mousedown', handlePointerDown);
+
+// Touch events for Mobile
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault(); // Prevent scrolling while aiming
+    handlePointerMove(e);
+}, { passive: false });
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Prevent accidental double-tap zoom
+    handlePointerDown(e);
+}, { passive: false });
 
 let lastTime = 0;
 function gameLoop(timestamp) {
