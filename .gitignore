@@ -1,0 +1,10 @@
+node_modules/
+dist/
+RhodeZuma-darwin-arm64/
+RhodeZuma-darwin-x64/
+龙泡泡大作战-darwin-arm64/
+龙泡泡大作战-darwin-x64/
+*.app
+*.dmg
+*.zip
+.DS_Store

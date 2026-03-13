@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龙泡泡大作战</title>
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="apple-touch-icon" href="js/assests/red.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <header>
+            <div class="logo">
+                <img src="js/assests/red.png" class="logo-icon" alt="" />
+                <h1>龙泡泡大作战</h1>
+            </div>
+            <div class="scores">
+                <div class="score-board">分数 <span id="score">0</span></div>
+                <div class="score-board best-score">最高分 <span id="best-score">0</span></div>
+            </div>
+        </header>
+
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="480" height="640"></canvas>
+            <div id="game-overlay" class="hidden">
+                <h2 id="overlay-title">游戏结束</h2>
+                <div class="final-stats">
+                    <p>得分: <span id="final-score">0</span></p>
+                    <p class="new-record hidden" id="new-record-msg">🎊 新纪录！ 🎊</p>
+                </div>
+                <button id="restart-btn">再玩一次</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/grid.js"></script>
+    <script src="js/marble.js"></script>
+    <script src="js/cannon.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/logic.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        // Register Service Worker for PWA Offline Support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service Worker Registered!', reg))
+                    .catch(err => console.error('Service Worker Registration Failed!', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "龙泡泡大作战",
+  "short_name": "龙泡泡",
+  "description": "一个好玩的消除大作战游戏",
+  "start_url": "index.html",
+  "display": "fullscreen",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "js/assests/red.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "js/assests/red.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
