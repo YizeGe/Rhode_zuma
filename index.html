@@ -16,8 +16,20 @@
 </head>
 
 <body>
+    <!-- UI 覆盖层（菜单系统） -->
+    <div id="ui-overlay" class="overlay">
+        <div id="main-menu" class="screen"></div>
+        <div id="level-select" class="screen hidden"></div>
+        <div id="character-select" class="screen hidden"></div>
+        <div id="gacha-screen" class="screen hidden"></div>
+        <div id="character-detail" class="screen hidden"></div>
+        <div id="quest-screen" class="screen hidden"></div>
+        <div id="challenge-screen" class="screen hidden"></div>
+    </div>
+
+    <!-- 游戏容器 -->
     <div id="game-container">
-        <header>
+        <header id="game-header">
             <div class="logo">
                 <img src="js/assests/red.png" class="logo-icon" alt="" />
                 <h1>龙泡泡大作战</h1>
@@ -28,7 +40,35 @@
             </div>
         </header>
 
-        <div class="canvas-wrapper">
+        <!-- 游戏信息栏（战斗中显示，Canvas 上方） -->
+        <div id="game-info-bar" class="hidden">
+            <div class="info-left">
+                <span id="level-hud-name" class="info-name">关卡</span>
+            </div>
+            <div class="info-center">
+                <span>🎯 <strong id="level-hud-target">0</strong></span>
+                <span class="info-divider">|</span>
+                <span>💣 <strong id="level-hud-shots">0</strong></span>
+            </div>
+            <div class="info-right">
+                <span class="info-score">⭐ <strong id="hud-score">0</strong></span>
+            </div>
+        </div>
+
+        <div class="canvas-wrapper hidden">
+            <!-- 技能按钮 -->
+            <div id="skill-btn" class="hidden" onclick="activateCharacterSkill()">
+                <div class="skill-icon"></div>
+                <canvas id="skill-cooldown-ring" width="60" height="60"></canvas>
+            </div>
+            <!-- 计时挑战 HUD -->
+            <div id="challenge-hud" class="hidden">
+                <span>⏱ <span id="challenge-timer">00:00</span></span>
+                <span>消除: <span id="challenge-clears">0</span></span>
+            </div>
+            <!-- 退出按钮 -->
+            <button id="exit-game-btn" class="hidden" onclick="exitGame()">✕ 退出</button>
+
             <canvas id="gameCanvas" width="480" height="640"></canvas>
             <div id="game-overlay" class="hidden">
                 <h2 id="overlay-title">游戏结束</h2>
@@ -41,23 +81,71 @@
         </div>
     </div>
 
+    <!-- 游戏引擎 -->
     <script src="js/grid.js"></script>
     <script src="js/marble.js"></script>
     <script src="js/cannon.js"></script>
     <script src="js/audio.js"></script>
     <script src="js/logic.js"></script>
     <script src="js/particles.js"></script>
+
+    <!-- 系统层 -->
+    <script src="js/systems/save-data.js"></script>
+    <script src="js/systems/gacha-system.js"></script>
+    <script src="js/systems/quest-system.js"></script>
+    <script src="js/systems/character.js"></script>
+    <script src="js/systems/level-config.js"></script>
+    <script src="js/systems/challenge-system.js"></script>
+
+    <!-- UI 层 -->
+    <script src="js/ui/manager.js"></script>
+    <script src="js/ui/main-menu.js"></script>
+    <script src="js/ui/level-select.js"></script>
+    <script src="js/ui/character-select.js"></script>
+    <script src="js/ui/character-detail.js"></script>
+    <script src="js/ui/gacha.js"></script>
+    <script src="js/ui/quest.js"></script>
+    <script src="js/ui/time-challenge.js"></script>
+
+    <!-- 游戏主循环（最后加载，依赖以上所有） -->
     <script src="js/game.js"></script>
 
     <script>
+        // 应用初始化
+        function initApp() {
+            loadSaveData();
+            loadStaticData(() => {
+                loadChallengeConfigs(() => {
+                    renderMainMenu();
+                    renderLevelSelect();
+                    renderCharacterSelect();
+                    renderGacha();
+                    renderCharacterDetail();
+                    renderQuest();
+                    renderChallenge();
+                    UI.init();
+                    initGameCanvas();
+                });
+            });
+        }
+
+        function exitGame() {
+            gameInfo.state = 'GAMEOVER';
+            document.getElementById('game-overlay').classList.add('hidden');
+            document.getElementById('challenge-hud').classList.add('hidden');
+            UI.showScreen('main-menu');
+        }
+
         // Register Service Worker for PWA Offline Support
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
-                    .then(reg => console.log('Service Worker Registered!', reg))
-                    .catch(err => console.error('Service Worker Registration Failed!', err));
+                    .then(reg => console.log('SW Registered!'))
+                    .catch(err => console.error('SW Failed!', err));
             });
         }
+
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 

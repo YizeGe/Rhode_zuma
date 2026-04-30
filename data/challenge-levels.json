@@ -1,0 +1,32 @@
+{
+  "60s": {
+    "id": "60s",
+    "name": "60秒极速挑战",
+    "subtitle": "高压力短局",
+    "duration": 60,
+    "pushInterval": 3,
+    "marbleTypes": 5,
+    "gridRows": 6,
+    "goldFormula": { "base": 1, "bonus": 2, "threshold": 100 }
+  },
+  "90s": {
+    "id": "90s",
+    "name": "90秒标准挑战",
+    "subtitle": "平衡压力局",
+    "duration": 90,
+    "pushInterval": 4,
+    "marbleTypes": 5,
+    "gridRows": 5,
+    "goldFormula": { "base": 1, "bonus": 2, "threshold": 150 }
+  },
+  "120s": {
+    "id": "120s",
+    "name": "120秒持久挑战",
+    "subtitle": "耐力局",
+    "duration": 120,
+    "pushInterval": 4,
+    "marbleTypes": 6,
+    "gridRows": 4,
+    "goldFormula": { "base": 1, "bonus": 2, "threshold": 200 }
+  }
+}

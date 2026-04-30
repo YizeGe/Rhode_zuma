@@ -167,9 +167,6 @@ h1 {
 
 canvas {
     display: block;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
     touch-action: none;
 }
 
@@ -318,4 +315,483 @@ canvas {
     .score-board span {
         font-size: 20px;
     }
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/*  UI Overlay & Screen System                                  */
+/* ═══════════════════════════════════════════════════════════ */
+
+.overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+}
+.overlay.hidden { display: none; }
+
+.screen {
+    width: 100%;
+    max-width: 540px;
+    background: var(--bg-color);
+    min-height: 100%;
+    padding-bottom: 40px;
+}
+.screen.hidden { display: none; }
+
+.screen-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--panel-bg);
+    border-bottom: 2px solid var(--panel-highlight);
+    gap: 10px;
+}
+.screen-title {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-color);
+}
+.gold-display {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.back-btn {
+    background: var(--panel-highlight);
+    border: none;
+    color: var(--text-color);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.back-btn:hover { background: var(--accent); color: #fff; }
+
+/* ── Main Menu ────────────────────────────── */
+.menu-logo {
+    text-align: center;
+    padding: 40px 20px 20px;
+}
+.menu-logo .logo-big {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 12px;
+}
+.menu-logo h1 {
+    font-size: 28px;
+    color: var(--accent-dark);
+    text-shadow: 0 2px 4px rgba(255,140,105,0.2);
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 24px;
+}
+.menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-highlight);
+    border-radius: 18px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+.menu-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,140,105,0.25);
+}
+.menu-btn .btn-icon { font-size: 24px; }
+.menu-btn .badge {
+    position: absolute;
+    right: 16px;
+    background: #f44336;
+    color: #fff;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 800;
+}
+
+.menu-gold {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    padding: 24px;
+}
+
+/* ── Level Select ──────────────────────────── */
+.level-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
+}
+
+.chapter-card {
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-highlight);
+    border-radius: 16px;
+    padding: 20px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.chapter-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.chapter-card.locked { opacity: 0.5; cursor: not-allowed; }
+.chapter-emoji { font-size: 36px; margin-bottom: 8px; }
+.chapter-name { font-size: 16px; font-weight: 800; color: var(--text-color); }
+.chapter-desc { font-size: 12px; color: var(--text-color); opacity: 0.6; margin-top: 4px; }
+
+#level-detail { padding: 0 16px 16px; }
+.level-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.level-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-highlight);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.level-card:hover { background: var(--panel-highlight); }
+.level-card.locked { opacity: 0.5; cursor: not-allowed; }
+.level-card.locked:hover { background: var(--panel-bg); }
+.level-name { font-weight: 700; font-size: 15px; color: var(--text-color); }
+.level-stars { font-size: 18px; letter-spacing: 2px; }
+.level-reward { font-weight: 700; color: var(--accent); font-size: 14px; }
+
+/* ── Character Grid ────────────────────────── */
+.character-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
+}
+.empty-msg {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+.char-select-card {
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-highlight);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+.char-select-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.char-select-card.selected { box-shadow: 0 0 0 3px var(--accent); }
+
+.char-select-rarity {
+    position: absolute; top: 8px; left: 8px;
+    font-size: 11px; font-weight: 800; color: #fff;
+    padding: 2px 8px; border-radius: 6px;
+}
+.char-select-emoji { font-size: 40px; margin: 8px 0 4px; }
+.char-select-name { font-weight: 800; font-size: 14px; color: var(--text-color); }
+.char-select-level { font-size: 11px; color: var(--text-color); opacity: 0.5; margin: 2px 0; }
+.char-select-skill { font-size: 11px; color: var(--accent-dark); }
+.char-selected-badge {
+    position: absolute; bottom: 8px; right: 8px;
+    background: var(--accent); color: #fff;
+    font-size: 10px; padding: 2px 8px; border-radius: 8px; font-weight: 700;
+}
+
+/* ── Character Detail ──────────────────────── */
+.character-list { padding: 16px; }
+
+.char-detail-card {
+    background: var(--panel-bg);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+.char-detail-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+}
+.char-rarity-badge {
+    font-size: 11px; font-weight: 800; color: #fff;
+    padding: 2px 10px; border-radius: 6px;
+}
+.char-emoji { font-size: 36px; }
+.char-name { font-weight: 800; font-size: 16px; color: var(--text-color); }
+.char-desc { font-size: 12px; color: var(--text-color); opacity: 0.5; }
+
+.char-stats {
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--panel-highlight);
+    font-size: 13px; color: var(--text-color);
+}
+.skill-desc { font-size: 12px; opacity: 0.6; margin: 4px 0; }
+.char-actions { display: flex; gap: 8px; margin-top: 8px; }
+.char-actions button {
+    flex: 1; padding: 8px 12px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 10px;
+    font-weight: 700; font-size: 13px; cursor: pointer;
+    transition: opacity 0.2s;
+}
+.char-actions button:hover { opacity: 0.85; }
+.char-actions button:disabled { background: #ccc; cursor: not-allowed; }
+.char-locked {
+    text-align: center; padding: 12px;
+    color: var(--text-color); opacity: 0.4; font-size: 13px;
+}
+
+/* ── Gacha ──────────────────────────────────── */
+.gacha-machine-area { text-align: center; padding: 20px 16px; }
+.gacha-visual {
+    font-size: 80px; margin: 20px 0;
+    animation: gachaBounce 1s ease-in-out infinite;
+}
+@keyframes gachaBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.gacha-pity { padding: 12px 16px; }
+.pity-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px; font-size: 12px; color: var(--text-color);
+}
+.pity-bar {
+    flex: 1; height: 8px;
+    background: var(--panel-highlight);
+    border-radius: 4px; overflow: hidden;
+}
+.pity-fill {
+    height: 100%; background: var(--accent);
+    border-radius: 4px; transition: width 0.3s;
+}
+.pity-fill.ssr { background: #ff9800; }
+
+.gacha-buttons { display: flex; gap: 12px; padding: 16px; }
+.gacha-btn {
+    flex: 1; padding: 18px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 16px;
+    font-size: 18px; font-weight: 800; cursor: pointer;
+    transition: all 0.2s;
+}
+.gacha-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+.gacha-btn.multi { background: #ff9800; }
+.gacha-btn small { font-size: 12px; opacity: 0.8; }
+
+.gacha-result-card {
+    text-align: center;
+    background: var(--panel-bg);
+    border: 3px solid var(--panel-highlight);
+    border-radius: 20px; padding: 24px;
+    margin: 8px 16px 16px;
+    animation: cardReveal 0.5s ease-out;
+}
+@keyframes cardReveal {
+    from { transform: scale(0.5) rotateY(90deg); opacity: 0; }
+    to { transform: scale(1) rotateY(0deg); opacity: 1; }
+}
+.result-rarity {
+    display: inline-block;
+    font-size: 12px; font-weight: 800; color: #fff;
+    padding: 2px 12px; border-radius: 6px; margin-bottom: 8px;
+}
+.result-emoji { font-size: 56px; margin: 8px 0; }
+.result-name { font-size: 22px; font-weight: 800; color: var(--text-color); }
+.result-type { font-size: 14px; color: var(--accent-dark); margin-top: 4px; }
+
+.gacha-multi-results { padding: 8px 16px; }
+.gacha-result-card.mini {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; margin-bottom: 6px;
+    border-radius: 12px; font-size: 13px; animation: none;
+}
+.mini-rarity {
+    font-size: 10px; font-weight: 800; color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+}
+
+/* ── Quest ──────────────────────────────────── */
+.quest-list { padding: 16px; }
+.quest-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-highlight);
+    border-radius: 14px; padding: 14px;
+    margin-bottom: 10px; transition: all 0.2s;
+}
+.quest-card.done { border-color: var(--accent); }
+.quest-card.claimed { opacity: 0.5; }
+.quest-icon { font-size: 28px; }
+.quest-info { flex: 1; }
+.quest-name { font-weight: 800; font-size: 14px; color: var(--text-color); }
+.quest-desc { font-size: 12px; color: var(--text-color); opacity: 0.5; margin: 2px 0; }
+.quest-progress { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.quest-bar {
+    flex: 1; height: 6px;
+    background: var(--panel-highlight);
+    border-radius: 3px; overflow: hidden;
+}
+.quest-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+.quest-progress span { font-size: 11px; color: var(--text-color); opacity: 0.5; min-width: 30px; }
+.quest-reward { text-align: right; }
+.quest-reward div { font-weight: 700; color: var(--accent); font-size: 14px; }
+.quest-reward button {
+    padding: 6px 14px; background: var(--accent); color: #fff;
+    border: none; border-radius: 8px;
+    font-weight: 700; font-size: 12px; cursor: pointer;
+    margin-top: 4px; transition: opacity 0.2s;
+}
+.quest-reward button:hover { opacity: 0.85; }
+.claimed-tag { font-size: 11px; color: var(--text-color); opacity: 0.4; }
+
+/* ── Challenge ──────────────────────────────── */
+.challenge-list { padding: 16px; }
+.challenge-card {
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-highlight);
+    border-radius: 16px; padding: 16px;
+    margin-bottom: 12px; cursor: pointer;
+    transition: all 0.2s;
+}
+.challenge-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-color: var(--accent);
+}
+.challenge-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.challenge-duration {
+    background: var(--accent); color: #fff;
+    padding: 2px 10px; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+}
+.challenge-name { font-size: 16px; font-weight: 800; color: var(--text-color); }
+.challenge-subtitle { font-size: 12px; color: var(--text-color); opacity: 0.5; margin-bottom: 8px; }
+.challenge-record { display: flex; gap: 16px; font-size: 12px; color: var(--text-color); opacity: 0.6; margin-bottom: 8px; }
+.challenge-action {
+    display: inline-block; padding: 8px 20px;
+    background: var(--accent); color: #fff;
+    border-radius: 10px; font-weight: 700; font-size: 14px;
+}
+
+/* ── In-Game HUD ────────────────────────────── */
+/* ── In-Game HUD ────────────────────────────── */
+.canvas-wrapper.hidden #gameCanvas { display: none; }
+
+#skill-btn {
+    position: absolute; bottom: 80px; right: 10px;
+    width: 60px; height: 60px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 50%; cursor: pointer;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+}
+#skill-btn.hidden { display: none; }
+#skill-btn .skill-icon { position: absolute; font-size: 24px; z-index: 2; pointer-events: none; }
+#skill-cooldown-ring { position: absolute; z-index: 1; pointer-events: none; }
+
+#level-hud {
+    position: absolute; top: 10px; left: 10px;
+    display: flex; flex-direction: column; gap: 4px;
+    font-size: 16px; font-weight: 800; color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;
+}
+#level-hud.hidden { display: none; }
+
+#challenge-hud {
+    position: absolute; top: 10px; left: 10px;
+    display: flex; flex-direction: column; gap: 4px;
+    font-size: 16px; font-weight: 800; color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;
+}
+#challenge-hud.hidden { display: none; }
+
+#exit-game-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.5); color: #fff;
+    border: none; padding: 6px 14px;
+    border-radius: 10px; font-size: 14px;
+    font-weight: 700; cursor: pointer;
+    z-index: 10; transition: background 0.2s;
+}
+#exit-game-btn:hover { background: rgba(244,67,54,0.8); }
+#exit-game-btn.hidden { display: none; }
+#game-header.hidden { display: none; }
+#game-container { position: relative; }
+
+/* ── Game Info Bar ──────────────────────────── */
+#game-info-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    margin: 0 0 4px 0;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 14px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+#game-info-bar.hidden { display: none; }
+#game-info-bar .info-name {
+    font-weight: 800;
+    font-size: 16px;
+    color: #ffd54f;
+}
+#game-info-bar .info-center {
+    display: flex;
+    gap: 10px;
+}
+#game-info-bar .info-divider {
+    color: rgba(255,255,255,0.3);
+}
+#game-info-bar .info-right .info-score {
+    color: #4fc3f7;
+}
+#game-info-bar strong {
+    color: #fff;
+}
+#game-info-bar .info-score strong {
+    color: #ffd54f;
+    font-size: 18px;
 }

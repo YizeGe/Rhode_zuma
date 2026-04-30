@@ -1,0 +1,8 @@
+{
+  "pitySR": 10, "pitySSR": 20,
+  "single": { "cost": 200, "probabilities": { "N":0.55, "R":0.30, "SR":0.12, "SSR":0.03 } },
+  "multi":  { "cost": 1800, "guarantee": "R", "probabilities": { "N":0.50, "R":0.35, "SR":0.12, "SSR":0.03 } },
+  "duplicate": {"N":50,"R":100,"SR":200,"SSR":500},
+  "levelUpgrade": {"base":100,"perLevel":50},
+  "skillUpgrade":{"base":200,"perLevel":100}
+}

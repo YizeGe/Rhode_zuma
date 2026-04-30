@@ -7,10 +7,12 @@ class Cannon {
         this.specialInterval = 5;
         this.readyMarble = this.generateMarble(this.x, this.y);
         this.nextMarble = this.generateMarble(this.x - 70, this.y + 10);
-        // Shrink next marble for UI appeal
         this.nextMarble.radius = this.readyMarble.radius * 0.6;
         this.flyingMarble = null;
         this.speed = 22;
+        // 穿透模式（龙魂使者技能）
+        this.piercingMode = false;
+        this.piercingShots = 0;
     }
 
     generateMarble(x, y) {
@@ -47,8 +49,17 @@ class Cannon {
         this.flyingMarble.vx = Math.cos(this.angle) * this.speed;
         this.flyingMarble.vy = Math.sin(this.angle) * this.speed;
 
+        // 穿透模式标记
+        if (this.piercingMode && this.piercingShots > 0) {
+            this.flyingMarble.isPiercing = true;
+            this.piercingShots--;
+            if (this.piercingShots <= 0) {
+                this.piercingMode = false;
+            }
+        }
+
         this.readyMarble = this.nextMarble;
-        this.readyMarble.radius = GRID_CONFIG.radius; // Restore scale
+        this.readyMarble.radius = GRID_CONFIG.radius;
         this.readyMarble.x = this.x;
         this.readyMarble.y = this.y;
         this.readyMarble.triggerBounce();
@@ -63,25 +74,36 @@ class Cannon {
         if (this.flyingMarble) this.flyingMarble.update();
 
         if (!this.flyingMarble) return;
-
         let m = this.flyingMarble;
+        // 死亡弹珠立即清理
+        if (m.dead) { this.flyingMarble = null; return; }
         let steps = 3;
         let stepS = 1 / steps;
 
         for (let i = 0; i < steps; i++) {
+            if (m.dead) { this.flyingMarble = null; return; }
             m.x += m.vx * stepS;
             m.y += m.vy * stepS;
 
+            // 穿透弹碰墙直接消失
             if (m.x - m.radius < 0) {
+                if (m.isPiercing) { m.dead = true; this.flyingMarble = null; return; }
                 m.x = m.radius;
                 m.vx *= -1;
             } else if (m.x + m.radius > 480) { // Screen logical width is always 480
+                if (m.isPiercing) { m.dead = true; this.flyingMarble = null; return; }
                 m.x = 480 - m.radius;
                 m.vx *= -1;
             }
 
-            // Ceiling collision based on game grid system (add grid offset support later)
+            // 穿透弹碰到顶端直接消失
             if (m.y - m.radius <= GRID_CONFIG.startY - GRID_CONFIG.radius + (window.gameInfo ? (gameInfo.gridOffset || 0) : 0)) {
+                if (m.isPiercing) {
+                    m.dead = true;
+                    this.flyingMarble = null;
+                    console.log('[Pierce] 穿透弹到达顶端，消失');
+                    return;
+                }
                 this.snapAndRest(m, grid, onSnap);
                 return;
             }
@@ -94,6 +116,42 @@ class Cannon {
                         let dy = m.y - target.y;
                         let dist = Math.sqrt(dx * dx + dy * dy);
                         if (dist < m.radius * 2 * 0.85) {
+                            // 穿透模式：摧毁目标球并继续飞行
+                            if (m.isPiercing) {
+                                // 立即标记目标球为 dead，防止下一帧重复碰撞
+                                target.dead = true;
+                                target.vx = (Math.random() - 0.5) * 4;
+                                target.vy = -Math.random() * 5;
+                                // 摧毁周围 2 格内的球
+                                const pierceRadius = 2 * GRID_CONFIG.radius * 2;
+                                for (let rr = 0; rr < grid.cells.length; rr++) {
+                                    for (let cc = 0; cc < grid.cells[rr].length; cc++) {
+                                        const t = grid.cells[rr][cc];
+                                        if (t && !t.dead && !t.dropping && !t.popping) {
+                                            const ddx = t.x - target.x;
+                                            const ddy = t.y - target.y;
+                                            if (Math.sqrt(ddx * ddx + ddy * ddy) < pierceRadius) {
+                                                t.dead = true;
+                                                t.vx = (Math.random() - 0.5) * 4;
+                                                t.vy = -Math.random() * 5;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (gameInfo && gameInfo.particles) {
+                                    gameInfo.particles.spawn(target.x, target.y + (gameInfo.gridOffset || 0), target.color, 12);
+                                }
+                                // 穿透完成后触发孤立球检测
+                                const floating = Logic.dropFloating(grid, gameInfo);
+                                if (floating && floating.length > 0) {
+                                    if (gameInfo && gameInfo.particles) {
+                                        floating.forEach(fm => {
+                                            gameInfo.particles.spawn(fm.x, fm.y + (gameInfo.gridOffset || 0), fm.color, 8);
+                                        });
+                                    }
+                                }
+                                continue; // 不停止，继续飞
+                            }
                             this.snapAndRest(m, grid, onSnap);
                             return;
                         }
