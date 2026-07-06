@@ -108,6 +108,15 @@
     <script src="js/ui/time-challenge.js"></script>
 
     <!-- 游戏主循环（最后加载，依赖以上所有） -->
+    <script>
+        // exitGame 必须在 game.js 之前定义，因为 game.js 会立即引用它
+        function exitGame() {
+            gameInfo.state = 'GAMEOVER';
+            document.getElementById('game-overlay').classList.add('hidden');
+            document.getElementById('challenge-hud').classList.add('hidden');
+            UI.showScreen('main-menu');
+        }
+    </script>
     <script src="js/game.js"></script>
 
     <script>
@@ -127,13 +136,6 @@
                     initGameCanvas();
                 });
             });
-        }
-
-        function exitGame() {
-            gameInfo.state = 'GAMEOVER';
-            document.getElementById('game-overlay').classList.add('hidden');
-            document.getElementById('challenge-hud').classList.add('hidden');
-            UI.showScreen('main-menu');
         }
 
         // Register Service Worker for PWA Offline Support
