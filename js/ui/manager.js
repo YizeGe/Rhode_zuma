@@ -122,7 +122,6 @@ const UI = {
             }
 
             title.textContent = '🎉 通关！';
-            document.getElementById('final-score').textContent = `⭐`.repeat(stars);
             const statsDiv = overlay.querySelector('.final-stats');
             if (statsDiv) {
                 statsDiv.innerHTML = `
@@ -143,7 +142,6 @@ const UI = {
 
         } else if (reason === 'game_over') {
             title.textContent = '💔 游戏结束';
-            document.getElementById('final-score').textContent = gameInfo.score;
             const statsDiv = overlay.querySelector('.final-stats');
             if (statsDiv) {
                 statsDiv.innerHTML = `<p>得分: <span>${gameInfo.score}</span></p>`;

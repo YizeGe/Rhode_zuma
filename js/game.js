@@ -484,6 +484,15 @@ function updateSkillButton() {
 }
 
 // 游戏退出按钮
-// Show exit button during gameplay
+function exitGame() {
+    gameInfo.state = 'GAMEOVER';
+    const overlay = document.getElementById('game-overlay');
+    if (overlay) overlay.classList.add('hidden');
+    const hud = document.getElementById('challenge-hud');
+    if (hud) hud.classList.add('hidden');
+    if (typeof UI !== 'undefined' && UI.showScreen) UI.showScreen('main-menu');
+}
+// 暴露到全局（兼容 onclick）
+window.exitGame = exitGame;
 document.getElementById('exit-game-btn').classList.remove('hidden');
 document.getElementById('exit-game-btn').addEventListener('click', exitGame);
