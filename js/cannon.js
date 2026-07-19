@@ -108,29 +108,35 @@ class Cannon {
                 return;
             }
 
+            // 预计算碰撞阈值平方（避免每次 Math.sqrt）
+            const collThreshSq = (m.radius * 2 * 0.85) ** 2;
+            const pierceRadiusSq = (2 * GRID_CONFIG.radius * 2) ** 2;
+
             for (let r = 0; r < grid.cells.length; r++) {
+                // 行裁剪：只检查弹珠 Y 附近的行
+                const rowY = r * GRID_CONFIG.rowHeight + GRID_CONFIG.startY + (window.gameInfo ? (gameInfo.gridOffset || 0) : 0);
+                if (Math.abs(rowY - m.y) > GRID_CONFIG.rowHeight * 3) continue;
+
                 for (let c = 0; c < grid.cells[r].length; c++) {
                     let target = grid.cells[r][c];
                     if (target && !target.dead && !target.dropping && !target.popping) {
                         let dx = m.x - target.x;
                         let dy = m.y - target.y;
-                        let dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < m.radius * 2 * 0.85) {
+                        let distSq = dx * dx + dy * dy;
+                        if (distSq < collThreshSq) {
                             // 穿透模式：摧毁目标球并继续飞行
                             if (m.isPiercing) {
-                                // 立即标记目标球为 dead，防止下一帧重复碰撞
                                 target.dead = true;
                                 target.vx = (Math.random() - 0.5) * 4;
                                 target.vy = -Math.random() * 5;
-                                // 摧毁周围 2 格内的球
-                                const pierceRadius = 2 * GRID_CONFIG.radius * 2;
+                                // 摧毁周围 2 格内的球（用平方距离）
                                 for (let rr = 0; rr < grid.cells.length; rr++) {
                                     for (let cc = 0; cc < grid.cells[rr].length; cc++) {
                                         const t = grid.cells[rr][cc];
                                         if (t && !t.dead && !t.dropping && !t.popping) {
                                             const ddx = t.x - target.x;
                                             const ddy = t.y - target.y;
-                                            if (Math.sqrt(ddx * ddx + ddy * ddy) < pierceRadius) {
+                                            if (ddx * ddx + ddy * ddy < pierceRadiusSq) {
                                                 t.dead = true;
                                                 t.vx = (Math.random() - 0.5) * 4;
                                                 t.vy = -Math.random() * 5;
@@ -141,7 +147,6 @@ class Cannon {
                                 if (gameInfo && gameInfo.particles) {
                                     gameInfo.particles.spawn(target.x, target.y + (gameInfo.gridOffset || 0), target.color, 12);
                                 }
-                                // 穿透完成后触发孤立球检测
                                 const floating = Logic.dropFloating(grid, gameInfo);
                                 if (floating && floating.length > 0) {
                                     if (gameInfo && gameInfo.particles) {
@@ -150,7 +155,7 @@ class Cannon {
                                         });
                                     }
                                 }
-                                continue; // 不停止，继续飞
+                                continue;
                             }
                             this.snapAndRest(m, grid, onSnap);
                             return;

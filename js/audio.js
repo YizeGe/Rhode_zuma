@@ -1,13 +1,18 @@
+let _sharedAudioCtx = null;
+
 class AudioSystem {
     constructor() {
         // Initialize Web Audio Context on first interaction to comply with browser policies
-        this.audioCtx = null;
-        this.initialized = false;
+        this.audioCtx = _sharedAudioCtx;
+        this.initialized = !!_sharedAudioCtx;
 
         // Listen to first user interaction to unlock audio
         const initAudio = () => {
             if (!this.initialized) {
-                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (!_sharedAudioCtx) {
+                    _sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                this.audioCtx = _sharedAudioCtx;
                 this.initialized = true;
                 window.removeEventListener('click', initAudio);
                 window.removeEventListener('keydown', initAudio);
@@ -70,6 +75,10 @@ class AudioSystem {
 
         osc.connect(gainNode);
         gainNode.connect(this.audioCtx.destination);
+
+        osc.onended = () => {
+            gainNode.disconnect();
+        };
 
         osc.start(time);
         osc.stop(time + duration);

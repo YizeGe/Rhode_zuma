@@ -7,6 +7,22 @@ const MARBLE_TYPES = [
     { id: 5, color: '#39ff14', name: '绿', imageSrc: 'js/assests/green.png' }    // Neon Green
 ];
 
+// 全局图片缓存
+const _imageCache = new Map();
+function getCachedImage(src) {
+    if (_imageCache.has(src)) return _imageCache.get(src);
+    const img = new Image();
+    img.src = src;
+    _imageCache.set(src, img);
+    return img;
+}
+
+// 全局渐变缓存
+const _gradientCache = new Map();
+
+// 技能图标常量
+const SKILL_ICONS = ['💣', '↔️', '✨', '↕️', '⬆️', '🎯'];
+
 class Marble {
     constructor(row, col, typeInfo, x, y) {
         this.row = row;
@@ -18,8 +34,7 @@ class Marble {
         this.imageObj = null;
 
         if (this.imageSrc) {
-            this.imageObj = new Image();
-            this.imageObj.src = this.imageSrc;
+            this.imageObj = getCachedImage(this.imageSrc);
         }
 
         this.x = x;
@@ -92,11 +107,15 @@ class Marble {
 
         if (this.imageObj && this.imageObj.complete) {
             // Fill the whole bubble with the character's designated color gradient
-            // Fill the whole bubble with the character's designated color gradient
-            let grad = ctx.createRadialGradient(-this.radius * 0.25, -this.radius * 0.25, 2, 0, 0, this.radius);
-            grad.addColorStop(0, 'rgba(255,255,255,0.8)');
-            grad.addColorStop(0.4, this.color);
-            grad.addColorStop(1, 'rgba(0,0,0,0.2)');
+            let gradKey = 'img_' + this.color;
+            let grad = _gradientCache.get(gradKey);
+            if (!grad) {
+                grad = ctx.createRadialGradient(-this.radius * 0.25, -this.radius * 0.25, 2, 0, 0, this.radius);
+                grad.addColorStop(0, 'rgba(255,255,255,0.8)');
+                grad.addColorStop(0.4, this.color);
+                grad.addColorStop(1, 'rgba(0,0,0,0.2)');
+                _gradientCache.set(gradKey, grad);
+            }
             ctx.fillStyle = grad;
             ctx.fill();
 
@@ -129,11 +148,15 @@ class Marble {
         } else {
             ctx.fillStyle = this.color;
 
-            // Cuteness gradient
-            let grad = ctx.createRadialGradient(-this.radius * 0.25, -this.radius * 0.25, 2, 0, 0, this.radius);
-            grad.addColorStop(0, 'rgba(255,255,255,0.6)');
-            grad.addColorStop(0.3, this.color);
-            grad.addColorStop(1, 'rgba(0,0,0,0.1)');
+            let gradKey2 = 'fb_' + this.color;
+            let grad = _gradientCache.get(gradKey2);
+            if (!grad) {
+                grad = ctx.createRadialGradient(-this.radius * 0.25, -this.radius * 0.25, 2, 0, 0, this.radius);
+                grad.addColorStop(0, 'rgba(255,255,255,0.6)');
+                grad.addColorStop(0.3, this.color);
+                grad.addColorStop(1, 'rgba(0,0,0,0.1)');
+                _gradientCache.set(gradKey2, grad);
+            }
             ctx.fillStyle = grad;
 
             ctx.fill();
@@ -168,7 +191,7 @@ class Marble {
             ctx.strokeStyle = 'white';
             ctx.stroke();
 
-            const SKILL_ICONS = ['💣', '↔️', '✨', '↕️', '⬆️', '🎯'];
+
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';

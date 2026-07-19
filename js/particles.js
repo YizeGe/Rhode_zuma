@@ -23,18 +23,18 @@ class Particle {
     }
 
     draw(ctx) {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, this.alpha);
+        // Outer glow (larger, semi-transparent)
+        ctx.globalAlpha = Math.max(0, this.alpha * 0.3);
         ctx.fillStyle = this.color;
-
-        // Cuter, slightly glowing particles
-        ctx.shadowColor = this.color;
-        ctx.shadowBlur = 4;
-
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner solid core
+        ctx.globalAlpha = Math.max(0, this.alpha);
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
     }
 }
 
@@ -95,6 +95,7 @@ class ParticleSystem {
     }
 
     spawn(x, y, color, count = 15) {
+        if (this.particles.length > 200) return;
         for (let i = 0; i < count; i++) {
             this.particles.push(new Particle(x, y, color));
         }
@@ -130,21 +131,25 @@ class ParticleSystem {
     }
 
     update() {
-        for (let i = this.particles.length - 1; i >= 0; i--) {
+        let pWriteIdx = 0;
+        for (let i = 0; i < this.particles.length; i++) {
             let p = this.particles[i];
             p.update();
-            if (p.alpha <= 0) {
-                this.particles.splice(i, 1);
+            if (p.alpha > 0) {
+                this.particles[pWriteIdx++] = p;
             }
         }
+        this.particles.length = pWriteIdx;
 
-        for (let i = this.texts.length - 1; i >= 0; i--) {
+        let tWriteIdx = 0;
+        for (let i = 0; i < this.texts.length; i++) {
             let t = this.texts[i];
             t.update();
-            if (t.alpha <= 0) {
-                this.texts.splice(i, 1);
+            if (t.alpha > 0) {
+                this.texts[tWriteIdx++] = t;
             }
         }
+        this.texts.length = tWriteIdx;
 
         if (this.shakeIntensity > 0) {
             this.shakeIntensity *= 0.85; // Damping
@@ -161,11 +166,14 @@ class ParticleSystem {
     }
 
     draw(ctx) {
+        ctx.save();
         for (let p of this.particles) {
             p.draw(ctx);
         }
+        ctx.globalAlpha = 1;
         for (let t of this.texts) {
             t.draw(ctx);
         }
+        ctx.restore();
     }
 }

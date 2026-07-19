@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="龙泡泡大作战 - 一款充满魔性与乐趣的泡泡龙游戏，包含多种角色与挑战模式！">
     <title>龙泡泡大作战</title>
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
@@ -11,7 +12,9 @@
     <link rel="apple-touch-icon" href="js/assests/red.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -57,7 +60,7 @@
 
         <div class="canvas-wrapper hidden">
             <!-- 技能按钮 -->
-            <div id="skill-btn" class="hidden" onclick="activateCharacterSkill()">
+            <div id="skill-btn" class="hidden">
                 <div class="skill-icon"></div>
                 <canvas id="skill-cooldown-ring" width="60" height="60"></canvas>
             </div>

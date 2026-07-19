@@ -4,14 +4,44 @@ let bestScore = 0;
 let totalShots = 0;
 let gameLoopRaf = null;
 
+// DOM 引用缓存（避免每帧 getElementById）
+const DOM = {};
+function cacheDOM() {
+    DOM.canvas = document.getElementById('gameCanvas');
+    DOM.ctx = DOM.canvas.getContext('2d');
+    DOM.score = document.getElementById('score');
+    DOM.bestScore = document.getElementById('best-score');
+    DOM.challengeTimer = document.getElementById('challenge-timer');
+    DOM.challengeClears = document.getElementById('challenge-clears');
+    DOM.gameInfoBar = document.getElementById('game-info-bar');
+    DOM.levelHud = document.getElementById('level-hud');
+    DOM.levelHudName = document.getElementById('level-hud-name');
+    DOM.levelHudTarget = document.getElementById('level-hud-target');
+    DOM.levelHudShots = document.getElementById('level-hud-shots');
+    DOM.hudScore = document.getElementById('hud-score');
+    DOM.skillBtn = document.getElementById('skill-btn');
+    DOM.skillRing = document.getElementById('skill-cooldown-ring');
+    DOM.skillRingCtx = DOM.skillRing ? DOM.skillRing.getContext('2d') : null;
+    DOM.gameOverlay = document.getElementById('game-overlay');
+    DOM.challengeHud = document.getElementById('challenge-hud');
+    DOM.exitBtn = document.getElementById('exit-game-btn');
+    if (DOM.exitBtn) {
+        DOM.exitBtn.classList.remove('hidden');
+        // Prevent multiple bindings if cacheDOM is called multiple times
+        DOM.exitBtn.removeEventListener('click', exitGame);
+        DOM.exitBtn.addEventListener('click', exitGame);
+    }
+}
+
 function initGameCanvas() {
+    cacheDOM();
     // 读最高分
     bestScore = parseInt(localStorage.getItem('lungpaopaoBestScore') || 0);
-    document.getElementById('best-score').innerText = bestScore;
+    if (DOM.bestScore) DOM.bestScore.innerText = bestScore;
 
     // resizeCanvas 不再自动 initLevel（由 UI.startGame 触发）
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = DOM.canvas;
+    const ctx = DOM.ctx;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = 480 * dpr;
     canvas.height = 640 * dpr;
@@ -29,7 +59,10 @@ function initGameCanvas() {
     window.addEventListener('resize', fitCanvas);
 
     // 技能按钮点击监听（DOM 已就绪）
-    document.getElementById('skill-btn').addEventListener('click', activateCharacterSkill);
+    if (DOM.skillBtn) {
+        DOM.skillBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); activateCharacterSkill(); });
+        DOM.skillBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); activateCharacterSkill(); }, { passive: false });
+    }
 
     createBackgroundBubbles();
     startGameLoop();
@@ -70,7 +103,7 @@ function initLevelWithConfig(config) {
     levelTotalShots = 0;
     levelClearCount = 0;
 
-    document.getElementById('score').innerText = '0';
+    if (DOM.score) DOM.score.innerText = '0';
 
     updateSkillButton();
     startGameLoop();
@@ -105,7 +138,7 @@ function createBackgroundBubbles() {
 
 // ── 输入处理 ──────────────────────────────────
 function getMousePos(evt) {
-    const canvas = document.getElementById('gameCanvas');
+    const canvas = DOM.canvas;
     const bounds = canvas.getBoundingClientRect();
     const scaleX = 480 / bounds.width;
     const scaleY = 640 / bounds.height;
@@ -146,7 +179,7 @@ function activateCharacterSkill() {
     CharacterSystem.activateSkill();
 }
 
-const canvas = document.getElementById('gameCanvas');
+const canvas = DOM.canvas || document.getElementById('gameCanvas');
 canvas.addEventListener('mousemove', handlePointerMove);
 canvas.addEventListener('mousedown', handlePointerDown);
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointerMove(e); }, { passive: false });
@@ -186,9 +219,9 @@ function update(dt) {
     // 挑战模式计时
     if (ChallengeSystem.isPlaying()) {
         ChallengeSystem.update(dt);
-        const hud = document.getElementById('challenge-timer');
+        const hud = DOM.challengeTimer;
         if (hud) hud.textContent = ChallengeSystem.getTimeStr();
-        const clearsEl = document.getElementById('challenge-clears');
+        const clearsEl = DOM.challengeClears;
         if (clearsEl) clearsEl.textContent = ChallengeSystem.totalCleared;
         if (ChallengeSystem.state === 'TIMEOUT') {
             ChallengeSystem.end('TIMEOUT');
@@ -216,18 +249,22 @@ function update(dt) {
             levelTotalShots++;
 
             // 消除计数
-            if (matchMade) {
-                levelClearCount += 3; // 至少消除3个
+            if (matchMade > 0) {
+                levelClearCount += matchMade;
 
                 // 挑战模式额外消除计数
                 if (ChallengeSystem.isPlaying()) {
-                    ChallengeSystem.onEliminated(levelClearCount);
+                    ChallengeSystem.onEliminated(matchMade);
                 }
 
                 // extra_drop 机制
                 if (shouldExtraDrop()) {
                     for (let i = 0; i < getExtraDropCount(); i++) {
-                        Logic.dropFloating(gameInfo.grid, gameInfo);
+                        setTimeout(() => {
+                            if (gameInfo.state === 'PLAYING') {
+                                pushDownSafely();
+                            }
+                        }, 500 + i * 200); // 延迟一点，让消除特效先播放
                     }
                 }
             }
@@ -334,7 +371,7 @@ function checkGameStatus() {
             if (gameInfo.score > bestScore) {
                 bestScore = gameInfo.score;
                 localStorage.setItem('lungpaopaoBestScore', bestScore);
-                document.getElementById('best-score').innerText = bestScore;
+                if (DOM.bestScore) DOM.bestScore.innerText = bestScore;
             }
             try { UI.returnFromGame('level_complete'); } catch(e) { console.error(e); }
         }
@@ -343,8 +380,8 @@ function checkGameStatus() {
 
 function draw() {
     if (!gameInfo || gameInfo.state !== 'PLAYING') return;
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = DOM.canvas;
+    const ctx = DOM.ctx;
     ctx.clearRect(0, 0, 480, 640);
     ctx.save();
     gameInfo.particles.applyShake(ctx);
@@ -371,11 +408,11 @@ function gameOver() {
     if (gameInfo.score > bestScore) {
         bestScore = gameInfo.score;
         localStorage.setItem('lungpaopaoBestScore', bestScore);
-        document.getElementById('best-score').innerText = bestScore;
+        if (DOM.bestScore) DOM.bestScore.innerText = bestScore;
     }
 
-    document.getElementById('game-info-bar')?.classList.add('hidden');
-    document.getElementById('level-hud')?.classList.add('hidden');
+    if (DOM.gameInfoBar) DOM.gameInfoBar.classList.add('hidden');
+    if (DOM.levelHud) DOM.levelHud.classList.add('hidden');
 
     if (ChallengeSystem.isPlaying()) {
         ChallengeSystem.onGameOver();
@@ -386,27 +423,27 @@ function gameOver() {
 
 // ── 技能按钮 ──────────────────────────────────
 function updateLevelHUD() {
-    const bar = document.getElementById('game-info-bar');
+    const bar = DOM.gameInfoBar;
     if (!bar) return;
     const config = currentLevelConfig;
     if (!config || (gameInfo && gameInfo.state !== 'PLAYING')) { bar.classList.add('hidden'); return; }
 
     bar.classList.remove('hidden');
-    document.getElementById('level-hud-name').textContent = '🏰 ' + (config.name || '');
+    if (DOM.levelHudName) DOM.levelHudName.textContent = '🏰 ' + (config.name || '');
 
     if (config.condition.type === 'survive') {
-        document.getElementById('level-hud-target').textContent = `${levelTotalShots}/${config.condition.shots}发`;
+        if (DOM.levelHudTarget) DOM.levelHudTarget.textContent = `${levelTotalShots}/${config.condition.shots}发`;
     } else if (config.condition.type === 'clear_count') {
-        document.getElementById('level-hud-target').textContent = `${levelClearCount}/${config.condition.count}球`;
+        if (DOM.levelHudTarget) DOM.levelHudTarget.textContent = `${levelClearCount}/${config.condition.count}球`;
     }
-    document.getElementById('level-hud-shots').textContent = levelTotalShots;
+    if (DOM.levelHudShots) DOM.levelHudShots.textContent = levelTotalShots;
 
-    const hudScore = document.getElementById('hud-score');
+    const hudScore = DOM.hudScore;
     if (hudScore) hudScore.textContent = gameInfo ? gameInfo.score : 0;
 }
 
 function updateSkillButton() {
-    const btn = document.getElementById('skill-btn');
+    const btn = DOM.skillBtn;
     if (!btn) return;
 
     if (gameInfo && gameInfo.state === 'PLAYING') {
@@ -440,9 +477,9 @@ function updateSkillButton() {
             btn.style.background = 'rgba(0,0,0,0.6)';
         }
 
-        const ring = document.getElementById('skill-cooldown-ring');
+        const ring = DOM.skillRing;
         if (ring) {
-            const ctx = ring.getContext('2d');
+            const ctx = DOM.skillRingCtx || ring.getContext('2d');
             const r = 26, cx = 30, cy = 30;
             ctx.clearRect(0, 0, 60, 60);
 
@@ -486,13 +523,11 @@ function updateSkillButton() {
 // 游戏退出按钮
 function exitGame() {
     gameInfo.state = 'GAMEOVER';
-    const overlay = document.getElementById('game-overlay');
+    const overlay = DOM.gameOverlay;
     if (overlay) overlay.classList.add('hidden');
-    const hud = document.getElementById('challenge-hud');
+    const hud = DOM.challengeHud;
     if (hud) hud.classList.add('hidden');
     if (typeof UI !== 'undefined' && UI.showScreen) UI.showScreen('main-menu');
 }
 // 暴露到全局（兼容 onclick）
 window.exitGame = exitGame;
-document.getElementById('exit-game-btn').classList.remove('hidden');
-document.getElementById('exit-game-btn').addEventListener('click', exitGame);

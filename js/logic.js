@@ -5,17 +5,18 @@ class Logic {
         let queue = [startMarble];
         let type = startMarble.type;
 
-        visited.add(`${startMarble.row},${startMarble.col}`);
+        visited.add(startMarble.row * 100 + startMarble.col);
 
-        while (queue.length > 0) {
-            let curr = queue.shift();
+        let qi = 0;
+        while (qi < queue.length) {
+            let curr = queue[qi++];
             cluster.push(curr);
 
             let neighbors = grid.getNeighbors(curr.row, curr.col);
             for (let n of neighbors) {
                 let m = grid.getMarble(n.row, n.col);
                 if (m && m.type === type && !m.dead && !m.popping && !m.dropping) {
-                    let key = `${m.row},${m.col}`;
+                    let key = m.row * 100 + m.col;
                     if (!visited.has(key)) {
                         visited.add(key);
                         queue.push(m);
@@ -36,17 +37,18 @@ class Logic {
             let m = grid.getMarble(0, c);
             if (m && !m.dead && !m.popping && !m.dropping) {
                 queue.push(m);
-                visited.add(`${m.row},${m.col}`);
+                visited.add(m.row * 100 + m.col);
             }
         }
 
-        while (queue.length > 0) {
-            let curr = queue.shift();
+        let qi = 0;
+        while (qi < queue.length) {
+            let curr = queue[qi++];
             let neighbors = grid.getNeighbors(curr.row, curr.col);
             for (let n of neighbors) {
                 let m = grid.getMarble(n.row, n.col);
                 if (m && !m.dead && !m.popping && !m.dropping) {
-                    let key = `${m.row},${m.col}`;
+                    let key = m.row * 100 + m.col;
                     if (!visited.has(key)) {
                         visited.add(key);
                         queue.push(m);
@@ -60,7 +62,7 @@ class Logic {
             for (let c = 0; c < grid.cells[r].length; c++) {
                 let m = grid.cells[r][c];
                 if (m && !m.dead && !m.popping && !m.dropping) {
-                    if (!visited.has(`${m.row},${m.col}`)) {
+                    if (!visited.has(m.row * 100 + m.col)) {
                         floating.push(m);
                     }
                 }
@@ -120,9 +122,9 @@ class Logic {
                     gameInfo.particles.spawnText(240, 320, 'GREAT!', '#ffaa00');
                 }
             }
-            return true;
+            return totalCleared;
         }
-        return false;
+        return 0;
     }
 
     static getSkillTargets(marble, grid, gameInfo) {
@@ -239,7 +241,7 @@ class Logic {
         if (cluster.length >= 3) {
             return this.executeDestruction(cluster, grid, gameInfo);
         }
-        return false;
+        return 0;
     }
 
     static addScore(points, gameInfo) {

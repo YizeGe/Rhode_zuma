@@ -7,6 +7,18 @@ const GRID_CONFIG = {
     startY: 40
 };
 
+const DIRS_ODD = [
+    [-1, 0], [-1, 1],
+    [0, -1], [0, 1],
+    [1, 0], [1, 1]
+];
+
+const DIRS_EVEN = [
+    [-1, -1], [-1, 0],
+    [0, -1], [0, 1],
+    [1, -1], [1, 0]
+];
+
 class Grid {
     constructor() {
         this.cells = [];
@@ -69,15 +81,7 @@ class Grid {
 
     getNeighbors(row, col) {
         const isOdd = this.isOddRow(row);
-        const dirs = isOdd ? [
-            [-1, 0], [-1, 1],
-            [0, -1], [0, 1],
-            [1, 0], [1, 1]
-        ] : [
-            [-1, -1], [-1, 0],
-            [0, -1], [0, 1],
-            [1, -1], [1, 0]
-        ];
+        const dirs = isOdd ? DIRS_ODD : DIRS_EVEN;
 
         let neighbors = [];
         for (let d of dirs) {
