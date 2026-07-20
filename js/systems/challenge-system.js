@@ -53,6 +53,7 @@ const ChallengeSystem = {
 
     // 结束挑战
     end(reason) {
+        if (this.state === reason || this.state === 'GAMEOVER' || this.state === 'TIMEOUT') return;
         this.state = reason;
         if (gameInfo) gameInfo.state = 'GAMEOVER';
 
@@ -206,5 +207,12 @@ function initChallengeLevel(config) {
     document.getElementById('score').textContent = '0';
 
     // 隐藏挑战结束 overlay
-    document.getElementById('game-overlay').classList.add('hidden');
+    const overlay = document.getElementById('game-overlay');
+    if (overlay) overlay.classList.add('hidden');
+
+    if (typeof startGameLoop === 'function') {
+        startGameLoop();
+    }
 }
+
+window.ChallengeSystem = ChallengeSystem;
